@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>答题</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta name="format-detection" content="telephone=no"/>
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+    <script type="text/javascript" src="../cms/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+    <script type="text/javascript" src="../cms/dist/js/myjs/jquery.form.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            a();
+        });
+        function a(){
+            var href = window.location.href;
+            var md5 = href.split("?")[1];
+            var questionId = md5.split("&")[0];
+            $("#questionId").val(questionId);
+            var userType = md5.split("&")[1];
+            var studentId = md5.split("&")[2];
+            $("#userId").val(studentId);
+            var companyId = md5.split("&")[3];
+            $("#companyId").val(companyId);
+            $.post(
+                "../api/getQustionDetail.jsonp",
+                {
+                    questionId:questionId,
+                    userType:userType,
+                    studentId:studentId,
+                    companyId:companyId
+                },
+                function(data,statu){
+                    if(statu == "success"){
+                        $("#question").html(data.questionDesc);
+                        if(data.questionUserAnswer != ""){
+                            $("#userAnswer textarea").val(data.questionUserAnswer);
+                            $("#userAnswer textarea").attr("disabled","disabled");
+                            $(".button").hide();
+                        }else{
+                            $("#userAnswer textarea").removeAttr("disabled");
+                            $(".button").show();
+                        }
+                        if(data.questionAnswerDesc != ""){
+                            $("#questionAnswer").show();
+                            $("#questionAnswer").html(data.questionAnswerDesc);
+                            $(".button").hide();
+                        }else{
+                            $("#questionAnswer").hide();
+                            $("#questionAnswer").html("");
+                        }
+                    }
+                }
+            );
+        }
+        function b(){
+            var answer = $("#userAnswer textarea").val();
+            if(answer == ""){
+                //提醒 答案不能为空;
+                alertAnserError("请输入答案！");
+            }else{
+                //提醒 是否确认提交答案;
+                alertAnswerSubmit();
+            }
+        }
+        function submit(){
+            var options = {
+                resetForm: true,
+                url: "../api/answerOLQustion.jsonp",
+                type: "POST",
+                dataType: "json",
+                success: function (res,statu) {
+                    //提醒 提交成功
+                    alertAnswerSuccess();
+                }
+            };
+            $("#questionForm").ajaxSubmit(options);
+        }
+        function errorSubmit(){
+            $("#userAnswer textarea").val("未对此题进行作答");
+            var options = {
+                resetForm: true,
+                url: "../api/answerOLQustion.jsonp",
+                type: "POST",
+                dataType: "json",
+                success: function (res,statu) {
+                    //提交成功后告知app重新加载
+                    errorSubmitSuccess();
+                }
+            };
+            $("#questionForm").ajaxSubmit(options);
+        }
+    </script>
+</head>
+<body style="background-color:#F4F5F6;">
+    <form id="questionForm">
+        <input type="hidden" id="questionId" name="questionId"/>
+        <input type="hidden" id="userId" name="userId"/>
+        <input type="hidden" id="companyId" name="companyId"/>
+        <div class="dati">
+            <div class="topic">
+                <div id="question" class="question"></div>
+                <div id="userAnswer" class="answer">
+                    <textarea placeholder="请输入内容" name="answerDesc"></textarea>
+                </div>
+                <div id="questionAnswer" class="questionAnswer"></div>
+            </div>
+            <div class="button">
+                <a onclick="b()">提交</a>
+            </div>
+        </div>
+    </form>
+</body>
+</html>
