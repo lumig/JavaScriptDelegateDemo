@@ -1,0 +1,4 @@
+# JavaScriptDelegateDemo
+
+
+通过代理方法去实现js和oc的交互，但现在我用的是block的方式去实现js的交互
